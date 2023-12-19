@@ -9,3 +9,5 @@ wheel
 pyaudio
 google-cloud-speech
 deepgram-sdk
+playsound==1.2.2 
+gTTS

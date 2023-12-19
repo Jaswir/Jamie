@@ -1,6 +1,8 @@
 import pyaudio
 import wave
 from deepgram import Deepgram
+from playsound import playsound 
+from gtts import gTTS
 
 import google.generativeai as genai
 from langchain_core.messages import HumanMessage
@@ -53,7 +55,7 @@ def audioToText():
     dg_client = Deepgram(DEEPGRAM_API_KEY)
     with open(PATH_TO_FILE, 'rb') as audio:
         source = {'buffer': audio, 'mimetype': MIMETYPE}
-        options = { "punctuate": False, "model": "enhanced", "language": "en" }
+        options = { "punctuate": False, "model": "enhanced", "language": "nl" }
 
         print('Requesting transcript... \n')
       
@@ -66,7 +68,7 @@ def audioToText():
 
 
 text = audioToText()
-print("Input text", text)
+print("Input text::", text)
 
 # Pass text to LLM
 GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
@@ -88,8 +90,18 @@ message = HumanMessage(
 llm = ChatGoogleGenerativeAI (model="gemini-pro-vision", temperature=0.7)
 print("Generating response...")
 response = llm.invoke([message])
-print("\n")
+print("\n Response::")
 print(response)
 
+text = str(response)
+text = text.split('=')[1]
 
+# Use Google Text to speech to convert text to speech
+tts = gTTS(text, lang='nl')
+tts.save("output.mp3")
 
+# Provide the path to your sound file 
+sound_file = "output.mp3" 
+ 
+# Play the sound file 
+playsound(sound_file) 
