@@ -1,39 +1,105 @@
 import streamlit as st
-from tempfile import NamedTemporaryFile
-import os
-import set_api_key
-from call_gemini import call_gemini_vision
+import pyaudio
+import wave
+from deepgram import Deepgram
+from playsound import playsound
+from gtts import gTTS
 
-st.title("Visual Image Scenario Interpretation & Object Narration  (VISION)")
+import google.generativeai as genai
+from langchain_core.messages import HumanMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+from os import environ
+import json
+import streamlit as st
+import time
+import datetime
+import asyncio
+import inspect
+from audio_recorder_streamlit import audio_recorder
+
+# Records Audio
+CHUNK = 1024
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 44100
+frames = []
+seconds = 6
+p = pyaudio.PyAudio()
+
+st.subheader("Jamie: A voice assistant")
+
+container = st.empty()
+container_2 = st.empty()
+
+async def recording_time():
+    button_start = container_2.button('Record')
+    clock = f"{0:02d}:{0:02d}"
+    if button_start:
+        while True:
+          
+            #call recording function()
+            print("start recording...")
+            stream = p.open(
+            format=FORMAT,
+            channels=CHANNELS,
+            rate=RATE,
+            input=True,
+            frames_per_buffer=CHUNK,
+        )
+
+            for i in range(0, int(RATE / CHUNK * seconds)):
+                data = stream.read(CHUNK)
+                frames.append(data)
+                secs = int(i / (RATE / CHUNK))
+                mm, ss = secs // 60, secs % 60
+                container.metric("Recording...", f"{mm:02d}:{ss:02d}")
+
+            print("recording stopped")
+            stream.stop_stream()
+            stream.close()
+            p.terminate()
+
+            wf = wave.open("input.wav", "wb")
+            wf.setnchannels(CHANNELS)
+            wf.setsampwidth(p.get_sample_size(FORMAT))
+            wf.setframerate(RATE)
+            wf.writeframes(b"".join(frames))
+            wf.close()
+            break
 
 
-# clears temp folder of images
-folder_path = "./temp"
-for filename in os.listdir(folder_path):
-    file_path = os.path.join(folder_path, filename)
-    if os.path.isfile(file_path):
-        os.remove(file_path)
+    else:
+        container.metric("Ask me...", clock)
+
+asyncio.run(recording_time())
 
 
-uploaded_file = st.file_uploader("Upload Image", type=['png', 'jpg'], accept_multiple_files=False, label_visibility="visible")
- 
-if uploaded_file is not None:
-    with NamedTemporaryFile(prefix='C:/Users/futeb/Coding/github/GeminiVision/temp/', suffix=".jpg", delete=False,) as tmp_file:
-        tmp_file.write(uploaded_file.getvalue())
-        temp_file_path = tmp_file.name
-        st.write(temp_file_path)
-    
+# container = st.empty()
+# container_2 = st.empty()
 
+# async def recording_time():
+#     button_start = container_2.button('Record')
+#     clock = f"{0:02d}:{0:02d}"
+#     if button_start:
+#         while True:
+#             button_end = container_2.button('End')
 
-if uploaded_file is not None:
-    st.image(uploaded_file)
+#             #call recording function()
 
+#             print("start recording...")
 
-if uploaded_file is not None:
-    user_input = st.text_input("Prompt", "Give me more context for this image")
-    button = st.button("Gemini Vision")
-    if button:
-        response = call_gemini_vision(user_input)
-        if response is not None:
-            st.write(response)
+#             for secs in range(0, 10000, 1):
+#                 mm, ss = secs // 60, secs % 60
+#                 container.metric("Recording...", f"{mm:02d}:{ss:02d}")
+#                 r = await asyncio.sleep(1)
+#             if button_end:
+#                 print("recording stopped")
+#                 container_2.empty()
+#                 button_start = container_2.button('Start')
+#                 break
 
+#     else:
+#         container.metric("Ask me...", clock)
+
+# asyncio.run(recording_time())

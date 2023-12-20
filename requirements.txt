@@ -11,3 +11,7 @@ google-cloud-speech
 deepgram-sdk
 playsound==1.2.2 
 gTTS
+streamlit
+audio-recorder-streamlit
+streamlit-mic-recorder
+inspect
