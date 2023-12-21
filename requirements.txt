@@ -8,7 +8,7 @@ pillow
 wheel
 pyaudio
 google-cloud-speech
-deepgram-sdk==2.9.9
+deepgram-sdk==2.9.0
 playsound==1.2.2 
 gTTS
 streamlit
