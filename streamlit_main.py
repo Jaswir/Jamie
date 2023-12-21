@@ -15,8 +15,9 @@ import streamlit as st
 import time
 import datetime
 import asyncio
-import inspect
 from audio_recorder_streamlit import audio_recorder
+import base64
+
 
 language = "en"
 
@@ -112,6 +113,25 @@ def getGeminiProResponse(text):
 
     return text
 
+def autoplay_audio(file_path: str):
+    with open(file_path, "rb") as f:
+        data = f.read()
+        b64 = base64.b64encode(data).decode()
+        md = f"""
+            <audio controls autoplay="true">
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+            </audio>
+            """
+        st.markdown(
+            md,
+            unsafe_allow_html=True,
+        )
+
+def convert_google_text_to_speech(text):
+    tts = gTTS(text, lang=language)
+    tts.save("output.mp3")
+
+
 
 st.subheader("Jamie: A voice assistant")
 
@@ -124,25 +144,21 @@ async def recording_time():
     clock = f"{0:02d}:{0:02d}"
     if button_start:
         while True:
+            
+            # record_audio()
+            # text = audioToText()
+            # print("Input text::", text)
 
-            record_audio()
-            text = audioToText()
-            print("Input text::", text)
-            text = getGeminiProResponse(text)
+            # container.metric("Processing...", f"{0:02d}:{5:02d}")
+            # button_start = container_2.button("Processing...", disabled=True)
 
-            print("Got response from gemini", text)
+            # text = getGeminiProResponse(text)
+            # print("Got response from gemini", text)
 
-       
-            # Use Google Text to speech to convert text to speech
-            print("Converting text to speech...")
-            tts = gTTS(text, lang=language)
-            tts.save("output.mp3")
+            # print("Converting text to speech...")
+            # convert_google_text_to_speech(text)
 
             st.session_state.recorded = True
-            container.metric("Processing...", f"{0:02d}:{5:02d}")
-
-            button_start = container_2.button("Processing...", disabled=True)
-
             break
 
     else:
@@ -155,5 +171,10 @@ if not st.session_state.recorded:
 
 
 if st.session_state.recorded:
-    st.markdown("<br><h5>Audio Response:</h5>", unsafe_allow_html=True)
-    st.audio("output.mp3")
+    st.markdown("<br><h5>Response: </h5>", unsafe_allow_html=True)
+    autoplay_audio("output.mp3")
+
+    button_restart = container_2.button("Record again?")
+    if button_restart:
+        st.markdown('<meta http-equiv="refresh" content="0">', unsafe_allow_html=True)
+
