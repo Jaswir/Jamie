@@ -83,7 +83,8 @@ def record_audio():
 def getGeminiProResponse(text):
 
     # Pass text to LLM
-    GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
+    # GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
+    GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=GOOGLE_API_KEY)
 
     message = HumanMessage(
