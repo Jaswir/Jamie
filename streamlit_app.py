@@ -147,13 +147,13 @@ async def recording_time():
         while True:
             
             button_start = container_2.button("Recording...")
-            record_audio()
+            # record_audio()
+            text = "how to mute the tv"
             text = audioToText()
             print("Input text::", text)
 
             container.metric("Processing...", f"{0:02d}:{5:02d}")
             button_start = container_2.button("Processing...", disabled=True)
-            text = "how to turn off the tv"
             st.markdown(f"<br><h5>{text}</h5>", unsafe_allow_html=True)
 
             response = getGeminiProResponse(text)
