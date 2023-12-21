@@ -30,10 +30,10 @@ frames = []
 seconds = 6
 p = pyaudio.PyAudio()
 
-environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
-DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
+environ["OPENAI_API_KEY"] = st.secrets["OPEN_AI_KEY"]
+# DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
 # For live streamlit get env variable from secrets
-# DEEPGRAM_API_KEY = st.secrets["DEEPGRAM_API_KEY"]
+DEEPGRAM_API_KEY = st.secrets["DEEPGRAM_API_KEY"]
 PATH_TO_FILE = "input.wav"
 MIMETYPE = "audio/wav"
 
@@ -90,9 +90,9 @@ audioToText()
 
 
 def getGeminiProResponse(text):
-    GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
+    # GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
     # # For live streamlit get env variable from secrets
-    # GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+    GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=GOOGLE_API_KEY)
 
     message = HumanMessage(

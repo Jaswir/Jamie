@@ -7,39 +7,13 @@ from gtts import gTTS
 import google.generativeai as genai
 from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
-from google.cloud import aiplatform
+import trulens_eval
 from trulens_eval.feedback.provider.openai import OpenAI as fOpenAI
 from os import environ
 import json
 
 language = "en"
 
-GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
-genai.configure(api_key=GOOGLE_API_KEY)
-
-message = HumanMessage(
-  content=[
-    {
-    "type": "text",
-    "text": "Which button should I press to mute the TV?",
-    }, # You can optionally provide text parts
-    {
-    "type": "image_url",
-    "image_url": "https://raw.githubusercontent.com/Jaswir/Jamie/main/Remote.jpeg"
-    },
-  ]
-)
-
-llm = ChatGoogleGenerativeAI (model="gemini-pro-vision", temperature=0.7)
-response = llm.invoke([message])
-print(response)
-
-# Initialize provider class
-environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
-fopenai = fOpenAI()
-relevance = fopenai.relevance_with_cot_reasons("Which button should I press to mute the TV?", response)
-
-print(relevance)
 
 # # Records Audio
 # CHUNK = 1024
@@ -133,3 +107,10 @@ print(relevance)
  
 # # # # Play the sound file 
 # # # playsound(sound_file) 
+
+# Evaluate with trulens
+# environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
+# fopenai = fOpenAI()
+# relevance = fopenai.relevance_with_cot_reasons("Which button should I press to mute the TV?", response)
+
+# print(relevance)
