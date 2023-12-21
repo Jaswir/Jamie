@@ -145,18 +145,21 @@ async def recording_time():
     if button_start:
         while True:
             
-            # record_audio()
-            # text = audioToText()
-            # print("Input text::", text)
+            button_start = container_2.button("Recording...")
+            record_audio()
+            text = audioToText()
+            print("Input text::", text)
 
-            # container.metric("Processing...", f"{0:02d}:{5:02d}")
-            # button_start = container_2.button("Processing...", disabled=True)
+            container.metric("Processing...", f"{0:02d}:{5:02d}")
+            button_start = container_2.button("Processing...", disabled=True)
+            text = "how to turn off the tv"
+            st.markdown(f"<br><h5>{text}</h5>", unsafe_allow_html=True)
 
-            # text = getGeminiProResponse(text)
-            # print("Got response from gemini", text)
+            response = getGeminiProResponse(text)
+            print("Got response from gemini", response)
 
-            # print("Converting text to speech...")
-            # convert_google_text_to_speech(text)
+            print("Converting text to speech...")
+            convert_google_text_to_speech(response)
 
             st.session_state.recorded = True
             break
@@ -171,7 +174,7 @@ if not st.session_state.recorded:
 
 
 if st.session_state.recorded:
-    st.markdown("<br><h5>Response: </h5>", unsafe_allow_html=True)
+    st.markdown("<h5>Response: </h5>", unsafe_allow_html=True)
     autoplay_audio("output.mp3")
 
     button_restart = container_2.button("Record again?")
