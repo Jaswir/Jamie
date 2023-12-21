@@ -12,3 +12,4 @@ deepgram-sdk==2.9.0
 playsound==1.2.2 
 gTTS
 streamlit
+streamlit_javascript
