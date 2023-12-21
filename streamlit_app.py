@@ -8,10 +8,12 @@ from gtts import gTTS
 import google.generativeai as genai
 from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
+from trulens_eval.feedback.provider.openai import OpenAI as fOpenAI
 
 from os import environ
 import json
 import streamlit as st
+from streamlit_javascript import st_javascript
 import time
 import datetime
 import asyncio
@@ -28,14 +30,16 @@ frames = []
 seconds = 6
 p = pyaudio.PyAudio()
 
-# DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
+environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
+DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
 # For live streamlit get env variable from secrets
-DEEPGRAM_API_KEY = st.secrets["DEEPGRAM_API_KEY"]
+# DEEPGRAM_API_KEY = st.secrets["DEEPGRAM_API_KEY"]
 PATH_TO_FILE = "input.wav"
 MIMETYPE = "audio/wav"
 
 if "recorded" not in st.session_state:
     st.session_state.recorded = False
+
 
 def record_audio():
     print("start recording...")
@@ -67,7 +71,6 @@ def record_audio():
     wf.close()
 
 
-
 def audioToText():
     dg_client = Deepgram(DEEPGRAM_API_KEY)
     with open(PATH_TO_FILE, "rb") as audio:
@@ -82,29 +85,30 @@ def audioToText():
 
         return text
 
+
 audioToText()
 
-def getGeminiProResponse(text):
 
-    # GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
+def getGeminiProResponse(text):
+    GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
     # # For live streamlit get env variable from secrets
-    GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+    # GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=GOOGLE_API_KEY)
 
     message = HumanMessage(
-    content=[
-        {
-        "type": "text",
-        "text": text,
-        }, # You can optionally provide text parts
-        {
-        "type": "image_url",
-        "image_url": "https://raw.githubusercontent.com/Jaswir/Jamie/main/Remote.jpeg"
-        },
-    ]
+        content=[
+            {
+                "type": "text",
+                "text": text,
+            },  # You can optionally provide text parts
+            {
+                "type": "image_url",
+                "image_url": "https://raw.githubusercontent.com/Jaswir/Jamie/main/Remote.jpeg",
+            },
+        ]
     )
 
-    llm = ChatGoogleGenerativeAI (model="gemini-pro-vision", temperature=0.7)
+    llm = ChatGoogleGenerativeAI(model="gemini-pro-vision", temperature=0.7)
     print("Generating response...")
     response = llm.invoke([message])
 
@@ -112,9 +116,10 @@ def getGeminiProResponse(text):
     # print(response)
 
     text = str(response)
-    text = text.split('=')[1]
+    text = text.split("=")[1]
 
     return text
+
 
 def autoplay_audio(file_path: str):
     with open(file_path, "rb") as f:
@@ -130,9 +135,11 @@ def autoplay_audio(file_path: str):
             unsafe_allow_html=True,
         )
 
+
 def convert_google_text_to_speech(text):
     tts = gTTS(text, lang=language)
     tts.save("output.mp3")
+
 
 st.subheader("Jamie: AI voice assistant")
 
@@ -145,8 +152,7 @@ async def recording_time():
     clock = f"{0:02d}:{0:02d}"
     if button_start:
         while True:
-            
-            button_start = container_2.button("Recording...")
+            button_start = container_2.button("Recording...", disabled=True)
             # record_audio()
             text = "how to mute the tv"
             text = audioToText()
@@ -162,12 +168,20 @@ async def recording_time():
             print("Converting text to speech...")
             convert_google_text_to_speech(response)
 
+            # Evaluate response and log result in database.
+            fopenai = fOpenAI()
+            relevance = fopenai.relevance_with_cot_reasons(
+                "Which button should I press to mute the TV?", response
+            )
+
+            js_code = f"""console.log("{relevance}")"""
+            st_javascript(js_code)
+
             st.session_state.recorded = True
             break
 
     else:
         container.metric("Ask me...", clock)
-        
 
 
 if not st.session_state.recorded:
@@ -181,4 +195,3 @@ if st.session_state.recorded:
     button_restart = container_2.button("Record again?")
     if button_restart:
         st.markdown('<meta http-equiv="refresh" content="0">', unsafe_allow_html=True)
-
