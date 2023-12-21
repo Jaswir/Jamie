@@ -14,11 +14,12 @@ from os import environ
 import json
 import streamlit as st
 from streamlit_javascript import st_javascript
+from streamlit.components.v1 import html
 import time
 import datetime
 import asyncio
 import base64
-
+import airtable
 
 language = "en"
 
@@ -30,8 +31,10 @@ frames = []
 seconds = 6
 p = pyaudio.PyAudio()
 
+
+# environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
 environ["OPENAI_API_KEY"] = st.secrets["OPEN_AI_KEY"]
-# DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
+DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
 # For live streamlit get env variable from secrets
 DEEPGRAM_API_KEY = st.secrets["DEEPGRAM_API_KEY"]
 PATH_TO_FILE = "input.wav"
@@ -84,9 +87,6 @@ def audioToText():
         text = data["results"]["channels"][0]["alternatives"][0]["transcript"]
 
         return text
-
-
-audioToText()
 
 
 def getGeminiProResponse(text):
@@ -153,8 +153,8 @@ async def recording_time():
     if button_start:
         while True:
             button_start = container_2.button("Recording...", disabled=True)
+
             # record_audio()
-            text = "how to mute the tv"
             text = audioToText()
             print("Input text::", text)
 
@@ -170,12 +170,23 @@ async def recording_time():
 
             # Evaluate response and log result in database.
             fopenai = fOpenAI()
-            relevance = fopenai.relevance_with_cot_reasons(
-                "Which button should I press to mute the TV?", response
-            )
+            relevance = fopenai.relevance_with_cot_reasons(text, response)
 
-            js_code = f"""console.log("{relevance}")"""
-            st_javascript(js_code)
+            # ACCESS_TOKEN = environ.get("AIRTABLE_ACCESS_TOKEN")
+            # For live streamlit get env variable from secrets
+            ACCESS_TOKEN = st.secrets["AIRTABLE_ACCESS_TOKEN"]
+            BASE_ID = "app3pk0rq2zPednxk"
+            TABLE_NAME = "Table%201"
+
+            at = airtable.Airtable(BASE_ID, ACCESS_TOKEN)
+            at.create(
+                TABLE_NAME,
+                {
+                    "Relevance": str(relevance),
+                    "Prompt": text,
+                    "Response": response,
+                },
+            )
 
             st.session_state.recorded = True
             break

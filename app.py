@@ -1,7 +1,7 @@
 import pyaudio
 import wave
 from deepgram import Deepgram
-from playsound import playsound 
+from playsound import playsound
 from gtts import gTTS
 
 import google.generativeai as genai
@@ -12,7 +12,65 @@ from trulens_eval.feedback.provider.openai import OpenAI as fOpenAI
 from os import environ
 import json
 
+import requests
+import airtable
+
 language = "en"
+
+
+inputtext = "How to mute the TV"
+
+# Pass text to LLM
+GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
+genai.configure(api_key=GOOGLE_API_KEY)
+
+message = HumanMessage(
+  content=[
+    {
+    "type": "text",
+    "text": inputtext,
+    }, # You can optionally provide text parts
+    {
+    "type": "image_url",
+    "image_url": "https://raw.githubusercontent.com/Jaswir/Jamie/main/Remote.jpeg"
+    },
+  ]
+)
+
+llm = ChatGoogleGenerativeAI (model="gemini-pro-vision", temperature=0.7)
+print("Generating response...")
+response = llm.invoke([message])
+print("\n Response::")
+print(response)
+
+text = str(response)
+result = text.split('=')[1]
+
+
+# Evaluate with trulens
+environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
+fopenai = fOpenAI()
+relevance = fopenai.relevance_with_cot_reasons("Which button should I press to mute the TV?", result)
+
+print(relevance)
+
+
+ACCESS_TOKEN = (
+    "patjS41bOtLK5Fwwz.7433922cf15958a36e71e38209223484717af05a0fa617bef73de8d7a28f8d60"
+)
+BASE_ID = "app3pk0rq2zPednxk"
+TABLE_NAME = "Table%201"
+
+at = airtable.Airtable(BASE_ID, ACCESS_TOKEN)
+at.create(
+    TABLE_NAME,
+    {
+        "Relevance": str(relevance),
+        "Prompt": inputtext,
+        "Response": result,
+    },
+)
+
 
 
 # # Records Audio
@@ -47,7 +105,7 @@ language = "en"
 # wf.close()
 
 
-#Converts Audio to Text
+# Converts Audio to Text
 # DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
 # PATH_TO_FILE = 'input.wav'
 # MIMETYPE = 'audio/wav'
@@ -60,8 +118,8 @@ language = "en"
 #         options = { "punctuate": False, "model": "enhanced", "language": language }
 
 #         print('Requesting transcript... \n')
-      
-    
+
+
 #         response = dg_client.transcription.sync_prerecorded(source, options)
 #         data = json.loads(json.dumps(response, indent=4))
 #         text = data["results"]["channels"][0]["alternatives"][0]["transcript"]
@@ -102,11 +160,11 @@ language = "en"
 # # tts = gTTS(text, lang=language)
 # # tts.save("output.mp3")
 
-# # # Provide the path to your sound file 
-# # sound_file = "output.mp3" 
- 
-# # # # Play the sound file 
-# # # playsound(sound_file) 
+# # # Provide the path to your sound file
+# # sound_file = "output.mp3"
+
+# # # # Play the sound file
+# # # playsound(sound_file)
 
 # Evaluate with trulens
 # environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")

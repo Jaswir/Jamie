@@ -15,5 +15,4 @@ streamlit
 streamlit_javascript
 trulens_eval==0.19.1
 llama_index
-litellm==1.11.1
-google-cloud-aiplatform==1.36.3
+airtable
