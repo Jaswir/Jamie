@@ -81,36 +81,36 @@ def audioToText():
         return text
 
 
-# def getGeminiProResponse(text):
+def getGeminiProResponse(text):
 
-#     # Pass text to LLM
-#     GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
-#     genai.configure(api_key=GOOGLE_API_KEY)
+    # Pass text to LLM
+    GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
+    genai.configure(api_key=GOOGLE_API_KEY)
 
-#     message = HumanMessage(
-#     content=[
-#         {
-#         "type": "text",
-#         "text": text,
-#         }, # You can optionally provide text parts
-#         {
-#         "type": "image_url",
-#         "image_url": "https://raw.githubusercontent.com/Jaswir/Jamie/main/Remote.jpeg"
-#         },
-#     ]
-#     )
+    message = HumanMessage(
+    content=[
+        {
+        "type": "text",
+        "text": text,
+        }, # You can optionally provide text parts
+        {
+        "type": "image_url",
+        "image_url": "https://raw.githubusercontent.com/Jaswir/Jamie/main/Remote.jpeg"
+        },
+    ]
+    )
 
-#     llm = ChatGoogleGenerativeAI (model="gemini-pro-vision", temperature=0.7)
-#     print("Generating response...")
-#     response = llm.invoke([message])
+    llm = ChatGoogleGenerativeAI (model="gemini-pro-vision", temperature=0.7)
+    print("Generating response...")
+    response = llm.invoke([message])
 
-#     print("\n Response::")
-#     print(response)
+    # print("\n Response::")
+    # print(response)
 
-#     text = str(response)
-#     text = text.split('=')[1]
+    text = str(response)
+    text = text.split('=')[1]
 
-#     return text
+    return text
 
 
 st.subheader("Jamie: A voice assistant")
@@ -128,7 +128,15 @@ async def recording_time():
             record_audio()
             text = audioToText()
             print("Input text::", text)
-            # getGeminiProResponse(text)
+            text = getGeminiProResponse(text)
+
+            print("Got response from gemini", text)
+
+       
+            # Use Google Text to speech to convert text to speech
+            print("Converting text to speech...")
+            tts = gTTS(text, lang=language)
+            tts.save("output.mp3")
 
             st.session_state.recorded = True
             container.metric("Processing...", f"{0:02d}:{5:02d}")
@@ -139,7 +147,13 @@ async def recording_time():
 
     else:
         container.metric("Ask me...", clock)
+        
 
 
 if not st.session_state.recorded:
     asyncio.run(recording_time())
+
+
+if st.session_state.recorded:
+    st.markdown("<br><h5>Audio Response:</h5>", unsafe_allow_html=True)
+    st.audio("output.mp3")
