@@ -147,9 +147,9 @@ async def recording_time():
         while True:
             
             button_start = container_2.button("Recording...")
-            # record_audio()
-            # text = audioToText()
-            # print("Input text::", text)
+            record_audio()
+            text = audioToText()
+            print("Input text::", text)
 
             container.metric("Processing...", f"{0:02d}:{5:02d}")
             button_start = container_2.button("Processing...", disabled=True)
