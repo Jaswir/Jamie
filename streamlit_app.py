@@ -1,7 +1,7 @@
 import streamlit as st
 import pyaudio
 import wave
-from deepgram import Deepgram
+# from deepgram import Deepgram
 from gtts import gTTS
 
 import google.generativeai as genai
@@ -65,19 +65,19 @@ def record_audio():
 
 
 
-def audioToText():
-    dg_client = Deepgram(DEEPGRAM_API_KEY)
-    with open(PATH_TO_FILE, "rb") as audio:
-        source = {"buffer": audio, "mimetype": MIMETYPE}
-        options = {"punctuate": False, "model": "enhanced", "language": language}
+# def audioToText():
+#     dg_client = Deepgram(DEEPGRAM_API_KEY)
+#     with open(PATH_TO_FILE, "rb") as audio:
+#         source = {"buffer": audio, "mimetype": MIMETYPE}
+#         options = {"punctuate": False, "model": "enhanced", "language": language}
 
-        print("Requesting transcript... \n")
+#         print("Requesting transcript... \n")
 
-        response = dg_client.transcription.sync_prerecorded(source, options)
-        data = json.loads(json.dumps(response, indent=4))
-        text = data["results"]["channels"][0]["alternatives"][0]["transcript"]
+#         response = dg_client.transcription.sync_prerecorded(source, options)
+#         data = json.loads(json.dumps(response, indent=4))
+#         text = data["results"]["channels"][0]["alternatives"][0]["transcript"]
 
-        return text
+#         return text
 
 
 def getGeminiProResponse(text):
