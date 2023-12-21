@@ -13,7 +13,6 @@ import json
 
 language = "en"
 
-record_end = False
 # Records Audio
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
@@ -46,32 +45,32 @@ wf.writeframes(b"".join(frames))
 wf.close()
 
 
-# #Converts Audio to Text
-# DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
-# PATH_TO_FILE = 'input.wav'
-# MIMETYPE = 'audio/wav'
+#Converts Audio to Text
+DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
+PATH_TO_FILE = 'input.wav'
+MIMETYPE = 'audio/wav'
 
-# def audioToText():
+def audioToText():
 
-#     dg_client = Deepgram(DEEPGRAM_API_KEY)
-#     with open(PATH_TO_FILE, 'rb') as audio:
-#         source = {'buffer': audio, 'mimetype': MIMETYPE}
-#         options = { "punctuate": False, "model": "enhanced", "language": language }
+    dg_client = Deepgram(DEEPGRAM_API_KEY)
+    with open(PATH_TO_FILE, 'rb') as audio:
+        source = {'buffer': audio, 'mimetype': MIMETYPE}
+        options = { "punctuate": False, "model": "enhanced", "language": language }
 
-#         print('Requesting transcript... \n')
+        print('Requesting transcript... \n')
       
     
-#         response = dg_client.transcription.sync_prerecorded(source, options)
-#         data = json.loads(json.dumps(response, indent=4))
-#         text = data["results"]["channels"][0]["alternatives"][0]["transcript"]
+        response = dg_client.transcription.sync_prerecorded(source, options)
+        data = json.loads(json.dumps(response, indent=4))
+        text = data["results"]["channels"][0]["alternatives"][0]["transcript"]
 
-#         return text
+        return text
 
 
-# text = audioToText()
-# print("Input text::", text)
+text = audioToText()
+print("Input text::", text)
 
-# # Pass text to LLM
+# Pass text to LLM
 # GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
 # genai.configure(api_key=GOOGLE_API_KEY)
 
@@ -104,5 +103,5 @@ wf.close()
 # # Provide the path to your sound file 
 # sound_file = "output.mp3" 
  
-# # Play the sound file 
-# playsound(sound_file) 
+# # # Play the sound file 
+# # playsound(sound_file) 

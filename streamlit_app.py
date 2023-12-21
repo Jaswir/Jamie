@@ -1,4 +1,4 @@
-import streamlit as st
+# import streamlit as st
 from deepgram import Deepgram
 
 # import pyaudio
@@ -9,8 +9,8 @@ from deepgram import Deepgram
 # from langchain_core.messages import HumanMessage
 # from langchain_google_genai import ChatGoogleGenerativeAI
 
-# from os import environ
-# import json
+from os import environ
+import json
 # import streamlit as st
 # import time
 # import datetime
@@ -18,7 +18,7 @@ from deepgram import Deepgram
 # import base64
 
 
-# language = "en"
+language = "en"
 
 # CHUNK = 1024
 # FORMAT = pyaudio.paInt16
@@ -28,9 +28,9 @@ from deepgram import Deepgram
 # seconds = 6
 # p = pyaudio.PyAudio()
 
-# DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
-# PATH_TO_FILE = "input.wav"
-# MIMETYPE = "audio/wav"
+DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
+PATH_TO_FILE = "input.wav"
+MIMETYPE = "audio/wav"
 
 # if "recorded" not in st.session_state:
 #     st.session_state.recorded = False
@@ -66,20 +66,21 @@ from deepgram import Deepgram
 
 
 
-# def audioToText():
-#     dg_client = Deepgram(DEEPGRAM_API_KEY)
-#     with open(PATH_TO_FILE, "rb") as audio:
-#         source = {"buffer": audio, "mimetype": MIMETYPE}
-#         options = {"punctuate": False, "model": "enhanced", "language": language}
+def audioToText():
+    dg_client = Deepgram(DEEPGRAM_API_KEY)
+    with open(PATH_TO_FILE, "rb") as audio:
+        source = {"buffer": audio, "mimetype": MIMETYPE}
+        options = {"punctuate": False, "model": "enhanced", "language": language}
 
-#         print("Requesting transcript... \n")
+        print("Requesting transcript... \n")
 
-#         response = dg_client.transcription.sync_prerecorded(source, options)
-#         data = json.loads(json.dumps(response, indent=4))
-#         text = data["results"]["channels"][0]["alternatives"][0]["transcript"]
+        response = dg_client.transcription.sync_prerecorded(source, options)
+        data = json.loads(json.dumps(response, indent=4))
+        text = data["results"]["channels"][0]["alternatives"][0]["transcript"]
 
-#         return text
+        return text
 
+audioToText()
 
 # def getGeminiProResponse(text):
 
