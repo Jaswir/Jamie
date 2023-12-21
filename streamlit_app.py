@@ -2,7 +2,6 @@ import streamlit as st
 import pyaudio
 import wave
 from deepgram import Deepgram
-from playsound import playsound
 from gtts import gTTS
 
 import google.generativeai as genai
@@ -15,7 +14,6 @@ import streamlit as st
 import time
 import datetime
 import asyncio
-from audio_recorder_streamlit import audio_recorder
 import base64
 
 
@@ -146,20 +144,22 @@ async def recording_time():
         while True:
             
             button_start = container_2.button("Recording...")
-            record_audio()
-            text = audioToText()
-            print("Input text::", text)
+            # record_audio()
+            # text = audioToText()
+            # print("Input text::", text)
 
-            container.metric("Processing...", f"{0:02d}:{5:02d}")
-            button_start = container_2.button("Processing...", disabled=True)
-            text = "how to turn off the tv"
-            st.markdown(f"<br><h5>{text}</h5>", unsafe_allow_html=True)
+            text = "How to mute the tv"
 
-            response = getGeminiProResponse(text)
-            print("Got response from gemini", response)
+            # container.metric("Processing...", f"{0:02d}:{5:02d}")
+            # button_start = container_2.button("Processing...", disabled=True)
+            # text = "how to turn off the tv"
+            # st.markdown(f"<br><h5>{text}</h5>", unsafe_allow_html=True)
 
-            print("Converting text to speech...")
-            convert_google_text_to_speech(response)
+            # response = getGeminiProResponse(text)
+            # print("Got response from gemini", response)
+
+            # print("Converting text to speech...")
+            # convert_google_text_to_speech(response)
 
             st.session_state.recorded = True
             break
