@@ -28,16 +28,15 @@ from io import BytesIO
 
 language = "en"
 
-# environ["GOOGLE_APPLICATION_CREDENTIALS"] = "gsc-credentials.json"
-# environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
-# DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
-# GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
+environ["GOOGLE_APPLICATION_CREDENTIALS"] = "gsc-credentials.json"
+environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
+DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
+GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
   
 # # For live streamlit get env variable from secrets
-environ["GOOGLE_APPLICATION_CREDENTIALS"] = st.secrets["GOOGLE_APPLICATION_CREDENTIALS"]
-environ["OPENAI_API_KEY"] = st.secrets["OPEN_AI_KEY"]
-DEEPGRAM_API_KEY = st.secrets["DEEPGRAM_API_KEY"]
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+# environ["OPENAI_API_KEY"] = st.secrets["OPEN_AI_KEY"]
+# DEEPGRAM_API_KEY = st.secrets["DEEPGRAM_API_KEY"]
+# GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 
 PATH_TO_FILE = "input.wav"
 MIMETYPE = "audio/wav"
