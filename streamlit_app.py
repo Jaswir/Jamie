@@ -27,55 +27,20 @@ from st_audiorec import st_audiorec
 
 language = "en"
 
-# CHUNK = 1024
-# FORMAT = pyaudio.paInt16
-# CHANNELS = 1
-# RATE = 44100
-# frames = []
-# seconds = 6
-# p = pyaudio.PyAudio()
-
-
 # environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
-# # environ["OPENAI_API_KEY"] = st.secrets["OPEN_AI_KEY"]
-DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
+# DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
+# GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
+  
 # # For live streamlit get env variable from secrets
-# # DEEPGRAM_API_KEY = st.secrets["DEEPGRAM_API_KEY"]
+environ["OPENAI_API_KEY"] = st.secrets["OPEN_AI_KEY"]
+DEEPGRAM_API_KEY = st.secrets["DEEPGRAM_API_KEY"]
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+
 PATH_TO_FILE = "input.wav"
 MIMETYPE = "audio/wav"
 
-# if "recorded" not in st.session_state:
-#     st.session_state.recorded = False
-
-
-# def record_audio():
-#     print("start recording...")
-#     stream = p.open(
-#         format=FORMAT,
-#         channels=CHANNELS,
-#         rate=RATE,
-#         input=True,
-#         frames_per_buffer=CHUNK,
-#     )
-
-#     for i in range(0, int(RATE / CHUNK * seconds)):
-#         data = stream.read(CHUNK)
-#         frames.append(data)
-#         secs = int(i / (RATE / CHUNK))
-#         mm, ss = secs // 60, secs % 60
-#         container.metric("Recording...", f"{mm:02d}:{ss:02d}")
-
-#     print("recording stopped")
-#     stream.stop_stream()
-#     stream.close()
-#     p.terminate()
-
-#     wf = wave.open("input.wav", "wb")
-#     wf.setnchannels(CHANNELS)
-#     wf.setsampwidth(p.get_sample_size(FORMAT))
-#     wf.setframerate(RATE)
-#     wf.writeframes(b"".join(frames))
-#     wf.close()
+if "recorded" not in st.session_state:
+    st.session_state.recorded = False
 
 
 def audioToText():
@@ -92,133 +57,110 @@ def audioToText():
 
         return text
 
+def getGeminiProResponse(text):
+    genai.configure(api_key=GOOGLE_API_KEY)
 
-wav_audio_data = st_audiorec()
-if wav_audio_data is not None:
-    st.audio(wav_audio_data, format='audio/wav')
-    with open('input.wav', mode='wb') as f:
-        f.write(wav_audio_data)
+    message = HumanMessage(
+        content=[
+            {
+                "type": "text",
+                "text": text,
+            },  # You can optionally provide text parts
+            {
+                "type": "image_url",
+                "image_url": "https://raw.githubusercontent.com/Jaswir/Jamie/main/Remote.jpeg",
+            },
+        ]
+    )
+
+    llm = ChatGoogleGenerativeAI(model="gemini-pro-vision", temperature=0.7)
+    print("Generating response...")
+    response = llm.invoke([message])
+
+    # print("\n Response::")
+    # print(response)
+
+    text = str(response)
+    text = text.split("=")[1]
+
+    return text
+
+
+def autoplay_audio(file_path: str):
+    with open(file_path, "rb") as f:
+        data = f.read()
+        b64 = base64.b64encode(data).decode()
+        md = f"""
+            <audio controls autoplay="true">
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+            </audio>
+            """
+        st.markdown(
+            md,
+            unsafe_allow_html=True,
+        )
+
+
+def convert_google_text_to_speech(text):
+    tts = gTTS(text, lang=language)
+    tts.save("output.mp3")
+
+
+st.subheader("Jamie: AI voice assistant")
+
+if not st.session_state.recorded:
+    wav_audio_data = st_audiorec()
+
+    if wav_audio_data is not None:
+        st.audio(wav_audio_data, format='audio/wav')
+        with open('input.wav', mode='wb') as f:
+            f.write(wav_audio_data)
+        
+        text = audioToText()
+        print("Input text::", text)
+        st.markdown(f"<br><h5>{text}</h5>", unsafe_allow_html=True)
+
+        response = getGeminiProResponse(text)
+        print("Got response from gemini", response)
+
+        print("Converting text to speech...")
+        convert_google_text_to_speech(response)
+
+        # Evaluate response and log result in database.
+        fopenai = fOpenAI()
+        relevance = fopenai.relevance_with_cot_reasons(text, response)
+
+        ACCESS_TOKEN = environ.get("AIRTABLE_ACCESS_TOKEN")
+        # For live streamlit get env variable from secrets
+        # ACCESS_TOKEN = st.secrets["AIRTABLE_ACCESS_TOKEN"]
+        BASE_ID = "app3pk0rq2zPednxk"
+        TABLE_NAME = "Table%201"
+
+        at = airtable.Airtable(BASE_ID, ACCESS_TOKEN)
+        at.create(
+            TABLE_NAME,
+            {
+                "Relevance": str(relevance),
+                "Prompt": text,
+                "Response": response,
+            },
+        )
+
+        st.session_state.input = text
+        st.session_state.recorded = True
+
     
-    text = audioToText()
-    print("Input text::", text)
-
-    st.write(text)
     
-
-# def getGeminiProResponse(text):
-#     GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
-#     # # For live streamlit get env variable from secrets
-#     # GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
-#     genai.configure(api_key=GOOGLE_API_KEY)
-
-#     message = HumanMessage(
-#         content=[
-#             {
-#                 "type": "text",
-#                 "text": text,
-#             },  # You can optionally provide text parts
-#             {
-#                 "type": "image_url",
-#                 "image_url": "https://raw.githubusercontent.com/Jaswir/Jamie/main/Remote.jpeg",
-#             },
-#         ]
-#     )
-
-#     llm = ChatGoogleGenerativeAI(model="gemini-pro-vision", temperature=0.7)
-#     print("Generating response...")
-#     response = llm.invoke([message])
-
-#     # print("\n Response::")
-#     # print(response)
-
-#     text = str(response)
-#     text = text.split("=")[1]
-
-#     return text
-
-
-# def autoplay_audio(file_path: str):
-#     with open(file_path, "rb") as f:
-#         data = f.read()
-#         b64 = base64.b64encode(data).decode()
-#         md = f"""
-#             <audio controls autoplay="true">
-#             <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-#             </audio>
-#             """
-#         st.markdown(
-#             md,
-#             unsafe_allow_html=True,
-#         )
-
-
-# def convert_google_text_to_speech(text):
-#     tts = gTTS(text, lang=language)
-#     tts.save("output.mp3")
-
-
-# st.subheader("Jamie: AI voice assistant")
-
 # container = st.empty()
-# container_2 = st.empty()
+container_2 = st.empty()
 
 
-# async def recording_time():
-#     button_start = container_2.button("Record")
-#     clock = f"{0:02d}:{0:02d}"
-#     if button_start:
-#         while True:
-#             button_start = container_2.button("Recording...", disabled=True)
+if st.session_state.recorded:
+    st.markdown("<h5>Response: </h5>", unsafe_allow_html=True)
+    autoplay_audio("output.mp3")
 
-#             record_audio()
-#             text = audioToText()
-#             print("Input text::", text)
+    button_restart = container_2.button("Record again?")
+    if button_restart:
+        st.markdown('<meta http-equiv="refresh" content="0">', unsafe_allow_html=True)
+        st.session_state.recorded = False
 
-#             container.metric("Processing...", f"{0:02d}:{5:02d}")
-#             button_start = container_2.button("Processing...", disabled=True)
-#             st.markdown(f"<br><h5>{text}</h5>", unsafe_allow_html=True)
-
-#             response = getGeminiProResponse(text)
-#             print("Got response from gemini", response)
-
-#             print("Converting text to speech...")
-#             convert_google_text_to_speech(response)
-
-#             # Evaluate response and log result in database.
-#             fopenai = fOpenAI()
-#             relevance = fopenai.relevance_with_cot_reasons(text, response)
-
-#             ACCESS_TOKEN = environ.get("AIRTABLE_ACCESS_TOKEN")
-#             # For live streamlit get env variable from secrets
-#             # ACCESS_TOKEN = st.secrets["AIRTABLE_ACCESS_TOKEN"]
-#             BASE_ID = "app3pk0rq2zPednxk"
-#             TABLE_NAME = "Table%201"
-
-#             at = airtable.Airtable(BASE_ID, ACCESS_TOKEN)
-#             at.create(
-#                 TABLE_NAME,
-#                 {
-#                     "Relevance": str(relevance),
-#                     "Prompt": text,
-#                     "Response": response,
-#                 },
-#             )
-
-#             st.session_state.recorded = True
-#             break
-
-#     else:
-#         container.metric("Ask me...", clock)
-
-
-# if not st.session_state.recorded:
-#     asyncio.run(recording_time())
-
-
-# if st.session_state.recorded:
-#     st.markdown("<h5>Response: </h5>", unsafe_allow_html=True)
-#     autoplay_audio("output.mp3")
-
-#     button_restart = container_2.button("Record again?")
-#     if button_restart:
-#         st.markdown('<meta http-equiv="refresh" content="0">', unsafe_allow_html=True)
