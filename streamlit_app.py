@@ -117,6 +117,8 @@ def convert_google_text_to_speech(text):
 
 
 st.subheader("Jamie: AI voice assistant")
+cul1,cul2,cul3 = st.columns([2,1,1])
+cul1.image('banner_image.png')
 
 uploaded_file = st.file_uploader("Choose an image file to upload", type="jpg")
 if uploaded_file is not None:
