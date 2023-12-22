@@ -10,6 +10,7 @@ from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from trulens_eval.feedback.provider.openai import OpenAI as fOpenAI
 
+import os
 from os import environ
 import json
 import streamlit as st
@@ -20,6 +21,157 @@ import datetime
 import asyncio
 import base64
 import airtable
+
+# html(
+#   """
+#  <!DOCTYPE html>
+#     <html lang="en">
+#     <head>
+#         <meta charset="UTF-8" />
+#         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+#         <title>Document</title>
+#         <link rel="stylesheet" href="style.css" />
+#     </head>
+#     <body>
+#         <main>
+#         <div id="soundwave" class="soundwave-wrap"></div>
+#         <!--  -->
+#         <div class="voiceplayer">
+#             <div class="btn-wrapper">
+#             <button id="startRecording">Start</button>
+#             <button id="stopRecording">Stop</button>
+#             </div>
+#             <br />
+#             <p id="isRecording">Click start button to record</p>
+#             <audio src="" id="audioElement" autoplay controls></audio>
+#         </div>
+#         <!-- Empty div to store the recorded files, This is the element you asked for -->
+#         <div id="recordingsContainer">
+
+#         </div>
+#         </main>
+
+#         <!-- Script -->
+#         <script>
+
+#         document
+#             .getElementById("startRecording")
+#             .addEventListener("click", initFunction);
+#         let isRecording = document.getElementById("isRecording");
+
+#         function initFunction() {
+#             // Display recording
+#             async function getUserMedia(constraints) {
+#             if (window.navigator.mediaDevices) {
+#                 return window.navigator.mediaDevices.getUserMedia(constraints);
+#             }
+#             let legacyApi =
+#                 navigator.getUserMedia ||
+#                 navigator.webkitGetUserMedia ||
+#                 navigator.mozGetUserMedia ||
+#                 navigator.msGetUserMedia;
+#             if (legacyApi) {
+#                 return new Promise(function (resolve, reject) {
+#                 legacyApi.bind(window.navigator)(constraints, resolve, reject);
+#                 });
+#             } else {
+#                 alert("user api not supported");
+#             }
+#             }
+#             isRecording.textContent = "Recording...";
+
+#             //recording variables
+#             let audioChunks = [];
+#             let record;
+
+#             function handlerFunction(stream) {
+#             record = new MediaRecorder(stream);
+
+#             record.start();
+
+#             record.ondataavailable = (e) => {
+#                 audioChunks.push(e.data);
+
+#                 if (record.state == "inactive") {
+#                 let blob = new Blob(audioChunks, { type: "audio/mp3" });
+#                 console.log(blob);
+
+#                 const audioElement = document.getElementById("audioElement");
+#                 audioElement.src = URL.createObjectURL(blob);
+
+#                 // Create a byte from the record
+#                 let reader = new FileReader();
+
+#                 reader.onloadend = () => {
+#                     // Get the raw binary data (ArrayBuffer)
+#                     let arrayBuffer = reader.result;
+
+#                     // Access the raw bytes as a Uint8Array
+#                     let byteArray = new Uint8Array(arrayBuffer);
+
+#                     console.log(byteArray);
+#                 };
+
+#                 reader.readAsArrayBuffer(blob);
+
+#                 // Append the audio element and download link to an empty container
+#                 const recordingsContainer = document.getElementById(
+#                     "recordingsContainer"
+#                 );
+#                 recordingsContainer.appendChild(audioElement);
+#                 recordingsContainer.appendChild(downloadLink);
+
+#                 // so after the recordings have been made, you can get the recorded item using python by targetting the
+#                 }
+#             };
+#             }
+
+#             function startusingBrowserMicrophone(boolean) {
+#             getUserMedia({ audio: boolean }).then((stream) => {
+#                 handlerFunction(stream);
+#             });
+#             }
+#             startusingBrowserMicrophone(true);
+#             // Stoping handler
+#             document
+#             .getElementById("stopRecording")
+#             .addEventListener("click", (e) => {
+#                 record.stop();
+#                 isRecording.textContent = "Click play button to start listening";
+#             });
+#         }
+#         </script>
+#     </body>
+#     </html>
+
+#   """
+# )
+
+
+# Create a file uploader widget
+# uploaded_file = st.file_uploader("Choose an image file to upload", type="jpg")
+
+# # Create a path to save the uploaded file
+# path_to_save = "\images"
+
+# # Create a view link for the uploaded file
+# def view_link(path):
+#     """Generates a link allowing the user to view a file."""
+#     _, filename = os.path.split(path)
+#     file_href = f'<a href="{path}" target="_blank">View {filename}</a>'
+#     return file_href
+
+# # Check if a file was uploaded
+# if uploaded_file is not None:
+#     # Save the uploaded file to the specified path
+#     with open(os.path.join(path_to_save, uploaded_file.name), "wb") as f:
+#         f.write(uploaded_file.getbuffer())
+
+#     # Generate the download and view links
+#     view_link = view_link(os.path.join(path_to_save, uploaded_file.name))
+
+#     # Display the view links
+#     st.markdown(view_link, unsafe_allow_html=True)
 
 language = "en"
 
@@ -32,11 +184,11 @@ seconds = 6
 p = pyaudio.PyAudio()
 
 
-# environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
-environ["OPENAI_API_KEY"] = st.secrets["OPEN_AI_KEY"]
+environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
+# environ["OPENAI_API_KEY"] = st.secrets["OPEN_AI_KEY"]
 DEEPGRAM_API_KEY = environ.get("DEEPGRAM_API_KEY")
 # For live streamlit get env variable from secrets
-DEEPGRAM_API_KEY = st.secrets["DEEPGRAM_API_KEY"]
+# DEEPGRAM_API_KEY = st.secrets["DEEPGRAM_API_KEY"]
 PATH_TO_FILE = "input.wav"
 MIMETYPE = "audio/wav"
 
@@ -90,9 +242,9 @@ def audioToText():
 
 
 def getGeminiProResponse(text):
-    # GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
+    GOOGLE_API_KEY = environ.get("GOOGLE_API_KEY")
     # # For live streamlit get env variable from secrets
-    GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+    # GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=GOOGLE_API_KEY)
 
     message = HumanMessage(
@@ -154,7 +306,7 @@ async def recording_time():
         while True:
             button_start = container_2.button("Recording...", disabled=True)
 
-            # record_audio()
+            record_audio()
             text = audioToText()
             print("Input text::", text)
 
@@ -172,9 +324,9 @@ async def recording_time():
             fopenai = fOpenAI()
             relevance = fopenai.relevance_with_cot_reasons(text, response)
 
-            # ACCESS_TOKEN = environ.get("AIRTABLE_ACCESS_TOKEN")
+            ACCESS_TOKEN = environ.get("AIRTABLE_ACCESS_TOKEN")
             # For live streamlit get env variable from secrets
-            ACCESS_TOKEN = st.secrets["AIRTABLE_ACCESS_TOKEN"]
+            # ACCESS_TOKEN = st.secrets["AIRTABLE_ACCESS_TOKEN"]
             BASE_ID = "app3pk0rq2zPednxk"
             TABLE_NAME = "Table%201"
 
