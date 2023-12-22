@@ -17,3 +17,4 @@ trulens_eval==0.19.1
 llama_index
 airtable
 streamlit-audiorec
+google-cloud-storage
