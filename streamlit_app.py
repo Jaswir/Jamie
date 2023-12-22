@@ -137,7 +137,6 @@ if uploaded_file is not None:
 
 wav_audio_data = st_audiorec()
 if wav_audio_data is not None:
-    st.audio(wav_audio_data, format='audio/wav')
     with open('input.wav', mode='wb') as f:
         f.write(wav_audio_data)
     
