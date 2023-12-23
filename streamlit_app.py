@@ -42,7 +42,7 @@ gsc_credentials_json_data = {
     "universe_domain": "googleapis.com",
 }
 
-environ["GOOGLE_APPLICATION_CREDENTIALS"] = gsc_credentials_json_data
+environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(gsc_credentials_json_data)
 
 uploaded_file = st.file_uploader("Choose an image file to upload", type="jpg")
 if uploaded_file is not None:
@@ -60,7 +60,6 @@ if uploaded_file is not None:
     st.session_state.image_url = (
         "https://storage.googleapis.com/bucket-j20/" + uploaded_file.name
     )
-
 
 
 # environ["OPENAI_API_KEY"] = environ.get("OPEN_AI_KEY")
