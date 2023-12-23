@@ -3,3 +3,6 @@
 env/ 
 .venv
 venv/
+
+# creds
+gsc_creds.json
